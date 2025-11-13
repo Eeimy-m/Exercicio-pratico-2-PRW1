@@ -1,5 +1,4 @@
-# Exercicio-pratico-2-PRW1
-🏥 Sistema de Gerenciamento de Clínica Médica
+#🏥 Sistema de Gerenciamento de Clínica Médica
 Frontend desenvolvido para simular o gerenciamento de uma clínica médica, permitindo o CRUD completo de médicos, pacientes e consultas.
 
 ✨ Funcionalidades
