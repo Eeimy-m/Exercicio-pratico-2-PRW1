@@ -55,19 +55,19 @@ npm ou yarn
 
 Instalação e Execução
 bash
-# Clone o repositório
+### Clone o repositório
 git clone [URL_DO_REPOSITORIO]
 
-# Acesse o diretório
+### Acesse o diretório
 cd clinica-medica-frontend
 
-# Instale as dependências
+### Instale as dependências
 npm install
 
-# Execute a aplicação
+### Execute a aplicação
 npm start
 
-# Ou para desenvolvimento
+### Ou para desenvolvimento
 npm run dev
 A aplicação estará disponível em http://localhost:3000
 
