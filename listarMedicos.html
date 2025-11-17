@@ -4,8 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        header{
+            text-align: center;
+            font-size: xx-large;
+        }
+        .subtopicos {
+            border: 1px solid #dbdbdb;
+            border-width: 0 0 1px;
+            padding: .5em .75em;
+            vertical-align: top;
+            align-items: center;
+        }
+        table {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            padding: .5em .75em;
+                padding-top: 0.5em;
+                padding-right: 0.75em;
+                padding-bottom: 0.5em;
+                padding-left: 0.75em;
+        }
+        thead th {
+            font-size: larger;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-    
+    <nav></nav>
+    <header>Médicos cadastrados</header><br><br>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="subtopicos">Nome</th>
+                    <th class="subtopicos">Especialidade</th>
+                    <th class="subtopicos">Data de cadastro</td>
+                    <th class="subtopicos">Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </body>
 </html>
