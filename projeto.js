@@ -172,6 +172,26 @@ function listarMedicos(medicos) {
 
 function mostrarFormularioMedicos(event) {
     event.preventDefault();
+    let container = document.getElementById("container-conteudo")
+    container.innerHTML = "";
+    container.innerHTML = `
+        <h2>Cadastrar Novo Médico</h2>
+        
+        <form id="form-medico"> 
+            <div>
+                <label for="nome">Nome:</label>
+                <input type="text" name="nome" id="nomeMedico" required>
+            </div>
+            <div>
+                <label for="especialidade">Especialidade:</label>
+                <input type="date" name="especialidade" id="especialidade" required>
+            </div>
+            
+            <button type="submit">Salvar Médico</button>
+        </form>
+    `;
+    let form = document.getElementById("form-medico");
+    form.addEventListener("submit", addMedicos);
 }
 
 function main() {
