@@ -1,6 +1,8 @@
 
 function carregarPacientes(event) {
+    if(event){
     event.preventDefault();
+    }
     fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes")
         .then((resposta) => {
             if (!resposta.ok) {
@@ -20,7 +22,7 @@ async function addPaciente(event) {
         method: "POST",
         body: JSON.stringify({
             nome: document.querySelector("input[name=nome]").value,
-            dataNascimento: documento.querySelector("input[name=dataNascimento]").value,
+            dataNascimento: document.querySelector("input[name=dataNascimento]").value,
         }),
         headers: {
             "Content-Type": "application/json"
@@ -31,19 +33,12 @@ async function addPaciente(event) {
         if (!resposta.ok) {
             throw new Error("Erro na requisição");
         }
-        let paciente = await resposta.json();
-        let tbody = document.getElementById("corpo-listar-pacientes");
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${paciente.nome}</td>
-            <td>${paciente.dataNascimento}</td>
-            <td>${paciente.dataCadastro}</td>
-        `;
-        tbody.append(tr);
+        alert("Paciente cadastrado com sucesso!");
         document.getElementById("form-paciente").reset();
+        carregarPacientes();
     }
     catch (error) {
-        console.log(`Deu problema: ${error.message}`);
+        alert(`Não foi possível cadastrar: ${error.message}`);
     }
 }
 
@@ -103,15 +98,15 @@ function carregarMedicos(event) {
     event.preventDefault();
     fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos")
         .then((resposta) => {
-                if (!resposta.ok) {
-                    throw new Error("Erro na requisição");
-                }
-                return resposta.json();
-            })
-            .then(listarMedicos)
-            .catch((error) => {
-                console.log(`Deu problema: ${error.message}`);
-            });
+            if (!resposta.ok) {
+                throw new Error("Erro na requisição");
+            }
+            return resposta.json();
+        })
+        .then(listarMedicos)
+        .catch((error) => {
+            console.log(`Deu problema: ${error.message}`);
+        });
 }
 
 async function addMedicos(event) {
@@ -239,7 +234,7 @@ function main() {
     clickListaPaciente.addEventListener("click", carregarPacientes);
     let clicKAddPaciente = document.getElementById("link-cadastrar-pacientes");
     clicKAddPaciente.addEventListener("click", mostrarFormularioPaciente);
-    
+
     let clickListarMedicos = document.getElementById("listar-medicos");
     clickListarMedicos.addEventListener("click", carregarMedicos);
     let clickAddMedicos = document.getElementsById("cadastrar-medicos");
