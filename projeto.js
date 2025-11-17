@@ -189,7 +189,7 @@ function mostrarFormularioMedicos(event) {
             </div>
             <div>
                 <label for="especialidade">Especialidade:</label>
-                <input type="date" name="especialidade" id="especialidade" required>
+                <input type="text" name="especialidade" id="especialidade" required>
             </div>
             
             <button type="submit">Salvar Médico</button>
@@ -197,6 +197,41 @@ function mostrarFormularioMedicos(event) {
     `;
     let form = document.getElementById("form-medico");
     form.addEventListener("submit", addMedicos);
+}
+
+function addConsulta(event) {
+
+}
+
+function formularioConsulta(event) {
+    event.preventDefault();
+    let container = document.getElementById("container-conteudo");
+    container.innerHTML = "";
+    container.innerHTML = `
+        <h2>Marcar Consulta<h2>
+
+        <form id = "form-consulta">
+            <div>
+                <label for="medico">Médico</label>
+                <select id="select-medico"></select>
+            </div>
+            <div>
+                <label for="paciente">Paciente</label>
+                <select id="select-paciente"></select>
+            </div>
+            <div>
+                <label for="data-consulta">Data da consulta</label>
+                <input type="date" id="data">
+            </div>
+            <div>
+                <label for="horario-consulta">Horário da consulta</label>
+                <input type="time" id="horario">
+            </div>
+            <button type="submit">Salvar Consulta</button>
+        </form>
+    `
+    let consulta = document.getElementById("form-consulta");
+    consulta.addEventListener("submit", addConsulta);
 }
 
 function main() {
@@ -209,5 +244,8 @@ function main() {
     clickListarMedicos.addEventListener("click", carregarMedicos);
     let clickAddMedicos = document.getElementsById("cadastrar-medicos");
     clickAddMedicos.addEventListener("click", mostrarFormularioMedicos);
+
+    let adicionarConsulta = document.getElementById("addConsulta");
+    adicionarConsulta.addEventListener("click", formularioConsulta);
 }
 main()
