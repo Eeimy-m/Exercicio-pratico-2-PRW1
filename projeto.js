@@ -100,6 +100,7 @@ function mostrarFormularioPaciente(event) {
 }
 
 function carregarMedicos(event) {
+    event.preventDefault();
     fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos")
         .then((resposta) => {
                 if (!resposta.ok) {
@@ -147,7 +148,6 @@ async function addMedicos(event) {
 }
 
 function listarMedicos(medicos) {
-    medicos.preventDefault();
     let container = document.getElementById("container-conteudo");
     container.innerHTML = "";
     let table = document.createElement("table");
