@@ -115,10 +115,20 @@ function carregarMedicos(event) {
 
 async function addMedicos(event) {
     event.preventDefault();
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            nome: document.querySelector()
+        })
+    }
 }
 
 function listarMedicos() {
 
+}
+
+function mostrarFormularioMedicos(event) {
+    event.preventDefault();
 }
 
 function main() {
@@ -126,6 +136,11 @@ function main() {
     clickListaPaciente.addEventListener("click", carregarPacientes);
     let clicKAddPaciente = document.getElementById("link-cadastrar-pacientes");
     clicKAddPaciente.addEventListener("click", mostrarFormularioPaciente);
+    
+    let clickListarMedicos = document.getElementById("listar-medicos");
+    clickListarMedicos.addEventListener("click", carregarMedicos);
+    let clickAddMedicos = document.getElementsById("cadastrar-medicos");
+    clickAddMedicos.addEventListener("click", mostrarFormularioMedicos);
 
 }
 main()
