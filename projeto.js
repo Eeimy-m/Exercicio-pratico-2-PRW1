@@ -74,6 +74,7 @@ function listarPacientes(pacientes) {
     table.append(tbody);
     container.append(table);
 }
+
 function mostrarFormularioPaciente(event) {
     event.preventDefault();
     let container = document.getElementById("container-conteudo")
@@ -96,6 +97,28 @@ function mostrarFormularioPaciente(event) {
     `;
     let form = document.getElementById("form-paciente");
     form.addEventListener("submit", addPaciente);
+}
+
+function carregarMedicos(event) {
+    fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos")
+        .then((resposta) => {
+                if (!resposta.ok) {
+                    throw new Error("Erro na requisição");
+                }
+                return resposta.json();
+            })
+            .then(listarPacientes)
+            .catch((error) => {
+                console.log(`Deu problema: ${error.message}`);
+            });
+}
+
+async function addMedicos(event) {
+    event.preventDefault();
+}
+
+function listarMedicos() {
+
 }
 
 function main() {
