@@ -115,7 +115,7 @@ async function addMedicos(event) {
         method: "POST",
         body: JSON.stringify({
             nome: document.querySelector("input[name=nome]").value,
-            especialidade: documento.querySelector("input[name=especialidade]").value,
+            especialidade: document.querySelector("input[name=especialidade]").value,
         }),
         headers: {
             "Content-Type": "application/json"
@@ -203,7 +203,7 @@ function formularioConsulta(event) {
     let container = document.getElementById("container-conteudo");
     container.innerHTML = "";
     container.innerHTML = `
-        <h2>Marcar Consulta<h2>
+        <h2>Marcar Consulta</h2>
 
         <form id = "form-consulta">
             <div>
@@ -237,7 +237,7 @@ function main() {
 
     let clickListarMedicos = document.getElementById("listar-medicos");
     clickListarMedicos.addEventListener("click", carregarMedicos);
-    let clickAddMedicos = document.getElementsById("cadastrar-medicos");
+    let clickAddMedicos = document.getElementById("cadastrar-medicos");
     clickAddMedicos.addEventListener("click", mostrarFormularioMedicos);
 
     let adicionarConsulta = document.getElementById("addConsulta");
