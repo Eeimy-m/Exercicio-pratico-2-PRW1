@@ -107,7 +107,7 @@ function carregarMedicos(event) {
                 }
                 return resposta.json();
             })
-            .then(listarPacientes)
+            .then(listarMedicos)
             .catch((error) => {
                 console.log(`Deu problema: ${error.message}`);
             });
@@ -118,13 +118,61 @@ async function addMedicos(event) {
     const options = {
         method: "POST",
         body: JSON.stringify({
-            nome: document.querySelector()
-        })
+            nome: document.querySelector("input[name=nome]").value,
+            especialidade: documento.querySelector("input[name=especialidade]").value,
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos", options)
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        let medico = await resposta.json();
+        let tbody = document.getElementById("corpo-listar-medicos");
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${medico.nome}</td>
+            <td>${medico.especialidade}</td>
+            <td>${medico.dataCadastro}</td>
+        `;
+        tbody.append(tr);
+        document.getElementById("form-medico").reset();
+    }
+    catch (error) {
+        console.log(`Deu problema: ${error.message}`);
     }
 }
 
-function listarMedicos() {
-
+function listarMedicos(medicos) {
+    medicos.preventDefault();
+    let container = document.getElementById("container-conteudo");
+    container.innerHTML = "";
+    let table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Especialidade</th>
+                <th>Data de Cadastro</th>
+            </tr>
+        </thead>
+    `;
+    let tbody = document.createElement("tbody");
+    tbody.id = "corpo-listar-medicos";
+    for (let medico of medicos) {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+        <td>${medico.nome}</td>
+        <td>${medico.especialidade}</td>
+        <td>${medico.dataCadastro}</td>
+       `
+        tbody.append(tr);
+    }
+    table.append(tbody);
+    container.append(table);
 }
 
 function mostrarFormularioMedicos(event) {
@@ -141,6 +189,5 @@ function main() {
     clickListarMedicos.addEventListener("click", carregarMedicos);
     let clickAddMedicos = document.getElementsById("cadastrar-medicos");
     clickAddMedicos.addEventListener("click", mostrarFormularioMedicos);
-
 }
 main()
