@@ -1,45 +1,108 @@
-async function getMedicos()
-{
-    try{
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos");
-        if(!resposta.ok){
-            throw new Error("Erro na requisição de medicos.");
+
+function carregarPacientes(event) {
+    event.preventDefault();
+    fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes")
+        .then((resposta) => {
+            if (!resposta.ok) {
+                throw new Error("Erro na requisição");
+            }
+            return resposta.json();
+        })
+        .then(listarPacientes)
+        .catch((error) => {
+            console.log(`Deu problema: ${error.message}`);
+        });
+}
+
+async function addPaciente(event) {
+    event.preventDefault();
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            nome: document.querySelector("input[name=nome]").value,
+            dataNascimento: documento.querySelector("input[name=dataNascimento]").value,
+        }),
+        headers: {
+            "Content-Type": "application/json"
         }
-        const medicos = await resposta.json();
-        return medicos;
     }
-    catch(error)
-    {
-        console.error("Falha em getMedicos", error);
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes", options)
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        let paciente = await resposta.json();
+        let tbody = document.getElementById("corpo-listar-pacientes");
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${paciente.nome}</td>
+            <td>${paciente.dataNascimento}</td>
+            <td>${paciente.dataCadastro}</td>
+        `;
+        tbody.append(tr);
+        document.getElementById("form-paciente").reset();
+    }
+    catch (error) {
+        console.log(`Deu problema: ${error.message}`);
     }
 }
-async function getPacientes()
-{
-    try{
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes");
-        if(!resposta.ok){
-            throw new Error("Erro na requisição de pacientes.");
-        }
-        const pacientes = await resposta.json();
-        return pacientes;
+
+function listarPacientes(pacientes) {
+    let container = document.getElementById("container-conteudo");
+    container.innerHTML = "";
+    let table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Data de Nascimento</th>
+                <th>Data de Cadastro</th>
+            </tr>
+        </thead>
+    `;
+    let tbody = document.createElement("tbody");
+    tbody.id = "corpo-listar-pacientes";
+    for (let paciente of pacientes) {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+        <td>${paciente.nome}</td>
+        <td>${paciente.dataNascimento}</td>
+        <td>${paciente.dataCadastro}</td>
+       `
+        tbody.append(tr);
     }
-    catch(error)
-    {
-        console.error("Falha em getPacientes",error);
-    }
+    table.append(tbody);
+    container.append(table);
 }
-async function getConsultas()
-{
-    try{
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/consultas");
-        if(!resposta.ok){
-            throw new Error("Erro na requisição de consultas.")
-        }
-        const consultas = await consultas.json();
-        return consultas;
-    }
-    catch(error)
-    {
-        console.error("Falha em getConsultas", error);
-    }
+function mostrarFormularioPaciente(event) {
+    event.preventDefault();
+    let container = document.getElementById("container-conteudo")
+    container.innerHTML = "";
+    container.innerHTML = `
+        <h2>Cadastrar Novo Paciente</h2>
+        
+        <form id="form-paciente"> 
+            <div>
+                <label for="nome">Nome:</label>
+                <input type="text" name="nome" id="nome" required>
+            </div>
+            <div>
+                <label for="dataNascimento">Data de Nascimento:</label>
+                <input type="date" name="dataNascimento" id="dataNascimento" required>
+            </div>
+            
+            <button type="submit">Salvar Paciente</button>
+        </form>
+    `;
+    let form = document.getElementById("form-paciente");
+    form.addEventListener("submit", addPaciente);
 }
+
+function main() {
+    let clickListaPaciente = document.getElementById("link-listar-pacientes");
+    clickListaPaciente.addEventListener("click", carregarPacientes);
+    let clicKAddPaciente = document.getElementById("link-cadastrar-pacientes");
+    clicKAddPaciente.addEventListener("click", mostrarFormularioPaciente);
+
+}
+main()
