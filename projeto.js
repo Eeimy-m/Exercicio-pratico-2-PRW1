@@ -243,6 +243,7 @@ async function listarMedicos(medicos) {  //// FUNCIONANDO
     
     adicionarListenersMedicos();
 }
+
 async function listarConsultas(pacienteID) { /////FUNCIONANDO
     let container = document.getElementById("container-consultas");
     container.innerHTML = "";
@@ -274,7 +275,6 @@ async function listarConsultas(pacienteID) { /////FUNCIONANDO
     tbody.id = "corpo-listar-consulta";
     if (consultasFiltradas.length > 0) {
         for (let consulta of consultasFiltradas) {
-
             let nomeMedico = listaMedicos[consulta.idMedico];
             let tr = document.createElement("tr");
             tr.innerHTML = `
@@ -284,8 +284,59 @@ async function listarConsultas(pacienteID) { /////FUNCIONANDO
                 <td><button id="cancelar-consulta">Cancelar</button></td>
             `
             tbody.append(tr);
+        }
+    }
+    else {
+        table.innerHTML="";
+        let tr = document.createElement("tr");
+        tr.innerHTML = `<td>Nenhuma consulta encontrada para este paciente.</td>`;
+        tbody.append(tr);
+    }
+    table.append(tbody);
+    container.append(table);
 
+}
 
+async function listarConsultasMedicos(medicoId) {
+    let container = document.getElementById("container-consultas");
+    container.innerHTML = "";
+    let table = document.createElement("table");
+    let listaPacientes = await criarListaPacientesPorId();
+    let listaMedicos = await criarListaMedicosPorId();
+    let consultas = await carregarConsultas();
+
+    let consultasFiltradas = consultas.filter(consulta => {
+        return String(consulta.idMedico) === String(medicoId);
+    })
+    table.innerHTML = `
+
+        <thead>
+        <tr>
+        <th>Consultas</th>
+        </tr>
+            <tr>
+                <th>Médico</th>
+                <th>Paciente</th>
+                <th>Data</th>
+                <th>Cancelar</th>
+            </tr>
+        </thead>
+    `;
+
+    let nomeMedico = listaMedicos[medicoId];
+    let tbody = document.createElement("tbody");
+    tbody.id = "corpo-listar-consulta";
+    if (consultasFiltradas.length > 0) {
+        for (let consulta of consultasFiltradas) {
+            let nomePaciente = listaPacientes[consulta.idPaciente];
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${nomeMedico}</td>
+                <td>${nomePaciente}</td>
+                <td>${consulta.data}</td>
+                <td><button id="cancelar-consulta">Cancelar</button></td>
+            `
+            tbody.append(tr);
         }
     }
     else {
@@ -329,8 +380,8 @@ function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA
 
         if (elementoClicado.id.startsWith('btn-consultas-medico-')) {
             const partesDoId = elementoClicado.id.split('-');
-            const idPaciente = partesDoId.pop();
-            listarConsultas(idPaciente);
+            const idMedico = partesDoId.pop();
+            listarConsultasMedicos(idMedico);
         }
         else if (elementoClicado.id.startsWith('btn-editar-medico-')) {
             editarMedico(event);
@@ -339,6 +390,19 @@ function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA
             deletarMedico(event);
         }
     });
+}
+
+function adicionarListenetConsultas() {
+    let tbody = document.getElementById("corpo-listar-consulta");
+    if(!tbody.ok) return;
+
+    tbody.addEventListener("click", (event) => {
+        const elementoClicado = event.target;
+        
+        if(elementoClicado.id == "cancelar-consulta") {
+            cancelarConsulta();
+        }
+    })
 }
 
 async function criarListaPacientesPorId() {
@@ -515,6 +579,10 @@ async function deletarMedico(event) {
         alert(`Não foi possível deletar: ${error}`);
     }
     
+}
+
+async function cancelarConsulta() {
+
 }
 
 async function editarPaciente(event) {
