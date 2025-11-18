@@ -234,7 +234,31 @@ async function mostrarFormularioMedicos(event) {
 }
 
 async function addConsulta(event) {
-
+    event.preventDefault();
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            medico: document.querySelector("select[name=select-medico]"),
+            paciente: document.querySelector("select[name=select-paciente]"),
+            data: document.getElementById("data"),
+            horario: document.getElementById("horario")
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/consultas", options);
+        if(!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        document.getElementById("form-consulta").reset()
+        alert("Consulta cadastrada com sucesso!");
+        carregarMedicos();
+    }
+    catch (error) {
+        alert(`Não foi possível cadastrar: ${error.message}`);
+    }
 }
 
 function formularioConsulta(event) {
@@ -246,12 +270,12 @@ function formularioConsulta(event) {
 
             <form id="form-consulta">
                 <div>
-                    <label for="medico">Médico</label>
-                    <select id="select-medico"></select>
+                    <label for="medico" name="medico">Médico</label>
+                    <select id="select-medico" name="select=medico"></select>
                 </div>
                 <div>
                     <label for="paciente">Paciente</label>
-                    <select id="select-paciente"></select>
+                    <select id="select-paciente" name="select-paciente"></select>
                 </div>
                 <div>
                     <label for="data-consulta">Data da consulta</label>
