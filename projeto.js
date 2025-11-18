@@ -93,7 +93,7 @@ function mostrarFormularioPaciente(event) {
             </div>
             <div>
                 <label for="dataNascimento">Data de Nascimento:</label>
-                <input type="date" name="dataNascimento" id="dataNascimento required>
+                <input type="date" name="dataNascimento" id="dataNascimento" required>
             </div>
             
             <button type="submit">Salvar Paciente</button>
@@ -351,8 +351,8 @@ async function listarConsultas(consultas, paciente, medicos) {
             <tr>
                 <th>Médico</th>
                 <th>Paciente</th>
-                <th>Data da consulta</th>
-                <th>Horário</th>
+                <th>Data</th>
+                <th>Cancelar</th>
             </tr>
         </thead>
     `;
@@ -371,6 +371,8 @@ async function listarConsultas(consultas, paciente, medicos) {
         tr.innerHTML = `
             <td>${medico.nome}</td>
             <td>${paciente.nome}</td>
+            <td>${consultas.data}</td>
+            <td><button id="cancelar-consulta>Cancelar</button></td>
         `
     }
 }
