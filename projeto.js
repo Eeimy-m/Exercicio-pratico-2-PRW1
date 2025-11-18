@@ -332,8 +332,8 @@ function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA
             const idPaciente = partesDoId.pop();
             listarConsultas(idPaciente);
         }
-        else if (elementoClicado.id.startsWith('btn-editar-paciente-')) {
-
+        else if (elementoClicado.id.startsWith('btn-editar-medico-')) {
+            editarMedico(event);
         }
         else if(elementoClicado.id.startsWith('btn-deletar-medico-')) {
             deletarMedico(event);
@@ -581,6 +581,78 @@ async function editarPaciente(event) {
 
 async function editarMedico(event) {
     event.preventDefault();
+    let idMedico = event.target.id.split('-').pop();
+    let especialidades = await carregarEspecialidade();
+
+    try {
+        let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/medicos/${idMedico}`);
+        if(!resposta.ok) {
+            throw new Error ("Erro ao editar.");
+        }
+        const medico = await resposta.json();
+
+        let container = document.getElementById("container-conteudo");
+        container.innerHTML = `
+            <h2>Editar Médico</h2>
+            <form id="form-medico">
+                <div>
+                    <label for="nome">Nome:</label>
+                    <input type="text" name="nome" id="nome" required>
+                </div>
+                <div>
+                    <label for="especialidade">Especialidade</label>
+                    <select name="especialidade" id="especialidade" required>
+                        <option value="">Selecione uma especialidade</option>
+                    </select>
+                </div>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        `;
+
+        const select = document.getElementById("especialidade");
+        for (let e of especialidades) {
+            let option = document.createElement("option");
+            option.value = e.id;
+            option.innerText = e.nome;
+            select.append(option);
+        }
+
+        document.querySelector("input[name=nome]").value = medico.nome || "";
+        document.querySelector("select[name=especialidade]").value = medico.idEspecialidade || "";
+
+        const form = document.getElementById("form-medico");
+        const submitHandler = async (e) => {
+            e.preventDefault();
+            try {
+                const idEspecialidade = Number(document.querySelector("select[name=especialidade]").value) || null;
+                const body = {
+                    nome: document.querySelector("input[name=nome]").value,
+                    idEspecialidade: idEspecialidade
+                };
+                const options = {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                };
+                let r = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/medicos/${idMedico}`, options);
+                if (!r.ok) {
+                    throw new Error("Erro ao salvar alterações");
+                } 
+                alert("Médico atualizado com sucesso!");
+                form.removeEventListener("submit", submitHandler);
+                const medicos = await carregarMedicos();
+                listarMedicos(medicos);
+            } 
+            catch (err) {
+                alert(`Não foi possível atualizar: ${err.message}`);
+            }
+        };
+        form.addEventListener("submit", submitHandler);
+
+    }
+    catch(error) {
+        alert(`Não foi possível editar: ${error}`);
+    }
 }
 
 async function main() {
