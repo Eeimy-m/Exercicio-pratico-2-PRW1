@@ -311,7 +311,9 @@ function adicionarListenersPacientes() {  ///FUNCIONANDO, MAS INCOMPLETA, FAZER 
             const idPaciente = partesDoId.pop();
             listarConsultas(idPaciente);
         }
-        // else if (elementoClicado.id.startsWith('btn-editar-paciente-')) 
+        else if (elementoClicado.id.startsWith('btn-editar-paciente-')) {
+            editarPaciente(event);
+        }
         else if(elementoClicado.id.startsWith('btn-deletar-paciente-')) {
             deletarPaciente(event);
         }
@@ -513,6 +515,72 @@ async function deletarMedico(event) {
         alert(`Não foi possível deletar: ${error}`);
     }
     
+}
+
+async function editarPaciente(event) {
+    event.preventDefault();
+    let idPaciente = event.target.id.split('-').pop();
+    try {
+        let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/pacientes/${idPaciente}`);
+        if(!resposta.ok) {
+            throw new Error ("Erro ao editar.");
+        }
+        const paciente = await resposta.json();
+
+        let container = document.getElementById("container-conteudo");
+        container.innerHTML = `
+            <h2>Editar Paciente</h2>
+            <form id="form-paciente">
+                <div>
+                    <label for="nome">Nome:</label>
+                    <input type="text" name="nome" id="nome" required>
+                </div>
+                <div>
+                    <label for="dataNascimento">Data de Nascimento:</label>
+                    <input type="date" name="dataNascimento" id="dataNascimento" required>
+                </div>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        `;
+
+        document.querySelector("input[name=nome]").value = paciente.nome || "";
+        document.querySelector("input[name=dataNascimento]").value = paciente.dataNascimento || "";
+
+        const form = document.getElementById("form-paciente");
+        const submitHandler = async (e) => {
+            e.preventDefault();
+            try {
+                const options = {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        nome: document.querySelector("input[name=nome]").value,
+                        dataNascimento: document.querySelector("input[name=dataNascimento]").value
+                    })
+                };
+                let r = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/pacientes/${idPaciente}`, options);
+                if (!r.ok) {
+                    throw new Error("Erro ao salvar alterações");
+                } 
+                alert("Paciente atualizado com sucesso!");
+                form.removeEventListener("submit", submitHandler);
+                const pacientes = await carregarPacientes();
+                listarPacientes(pacientes);
+            } 
+            catch (err) {
+                alert(`Não foi possível atualizar: ${err.message}`);
+            }
+        };
+        form.addEventListener("submit", submitHandler);
+
+    }
+    catch(error) {
+        alert(`Não foi possível editar: ${error}`);
+    }
+}
+
+async function editarMedico(event) {
+    event.preventDefault();
 }
 
 async function main() {
