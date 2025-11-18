@@ -302,7 +302,7 @@ async function carregarPacienteParaSelect(selectId) {
     }
 }
 
-function formularioConsulta(event) {
+async function formularioConsulta(event) {
     event.preventDefault();
     let container = document.getElementById("container-conteudo");
     container.innerHTML = "";
@@ -334,18 +334,45 @@ function formularioConsulta(event) {
             </form>
     `
 
-    carregarMedicosParaSelect("select-medico");
+    await carregarMedicosParaSelect("select-medico");
+    await carregarPacienteParaSelect("select-paciente");
 
     let consulta = document.getElementById("form-consulta");
     consulta.addEventListener("submit", addConsulta);
 }
 
-function listarConsultas(consultas, pacientes, medicos) {
+async function listarConsultas(consultas, paciente, medicos) {
     let container = document.getElementById("container-conteudo");
+    let especialidades = await carregarEspecialidade();
     container.innerHTML = "";
+    let table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Médico</th>
+                <th>Paciente</th>
+                <th>Data da consulta</th>
+                <th>Horário</th>
+            </tr>
+        </thead>
+    `;
+    let tbody = document.createElement("tbody");
+    tbody.id = "corpo-listar-consulta";
 
-
-
+    for(let medico of medicos) {
+        let nomeEspecialidade = medico.idEspecialidade;
+        for(let especialidade of especialidades) {
+            if(especialidade.id == nomeEspecialidade) {
+                nomeEspecialidade = especialidade.nome;
+                break;
+            }
+        }
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${medico.nome}</td>
+            <td>${paciente.nome}</td>
+        `
+    }
 }
 
 function main() {
