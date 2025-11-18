@@ -29,6 +29,12 @@ async function addPaciente(event) {
         }
     }
     try {
+        let hoje = new Date();
+        let inputData = document.querySelector("input[name=dataNascimento]").value;
+        let dataNascimento = new Date(inputData);
+        if (dataNascimento > hoje) {
+            throw new Error("Data de nascimento inválida")
+        }
         let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes", options)
         if (!resposta.ok) {
             throw new Error("Erro na requisição");
@@ -87,7 +93,7 @@ function mostrarFormularioPaciente(event) {
             </div>
             <div>
                 <label for="dataNascimento">Data de Nascimento:</label>
-                <input type="date" name="dataNascimento" id="dataNascimento" required>
+                <input type="date" name="dataNascimento" id="dataNascimento required>
             </div>
             
             <button type="submit">Salvar Paciente</button>
@@ -182,6 +188,9 @@ async function listarMedicos(medicos) {
         <td>${medico.nome}</td>
         <td>${nomeEspecialidade}</td>
         <td>${medico.dataCadastro}</td>
+        <td><button id="btn-consultas-medico">Consultas</button></td>
+        <td><button id="btn-editar-medico">Editar</button></td>
+        <td><button id="btn-deletar-medico">Deletar</button></td>
        `
         tbody.append(tr);
     }
