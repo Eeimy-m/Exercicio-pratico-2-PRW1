@@ -261,21 +261,66 @@ async function addConsulta(event) {
     }
 }
 
+async function carregarMedicosParaSelect(selectId) {
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos");
+        if(!resposta.ok) {
+            throw new Error ("Não foi possível carregar os dados dos médicos disponíveis.");
+        }
+        let medicos = await resposta.json();
+        let select = document.getElementById(selectId);
+        select.innerHTML = `<option value="">Selecione um médico</option>`
+        for(let medico of medicos) {
+            let option = document.createElement("option");
+            option.value = medico.id;
+            option.innerText = medico.nome;
+            select.append(option);
+        }
+    }
+    catch(error) {
+        console.log(`Deu problema ao carregar médicos: ${error.message}`);
+    }
+}
+
+async function carregarPacienteParaSelect(selectId) {
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes");
+        if(!resposta.ok) {
+            throw new Error ("Não foi possível carregar os dados dos médicos disponíveis.");
+        }
+        let select = document.getElementById(selectId);
+        let pacientes = await resposta.json();
+        for(let paciente of pacientes) {
+            let option = document.createElement("option");
+            option.value = paciente.id;
+            option.innerText = paciente.nome;
+            select.append(option);
+        }
+    }
+    catch(error){
+        console.log(`Deu problema ao carregar médicos: ${error.message}`);
+    }
+}
+
 function formularioConsulta(event) {
     event.preventDefault();
     let container = document.getElementById("container-conteudo");
     container.innerHTML = "";
     container.innerHTML = `
-        < h2 > Marcar Consulta</h2 >
+        <h2>Marcar Consulta</h2>
 
             <form id="form-consulta">
                 <div>
                     <label for="medico" name="medico">Médico</label>
-                    <select id="select-medico" name="select=medico"></select>
+                    <select id="select-medico" name="select=medico">
+                        <option>Selecione um médico</option>
+                    </select>
                 </div>
                 <div>
                     <label for="paciente">Paciente</label>
-                    <select id="select-paciente" name="select-paciente"></select>
+                    <select id="select-paciente" name="select-paciente">
+                        <option>Selecione um paciente</option>
+                    </select>
                 </div>
                 <div>
                     <label for="data-consulta">Data da consulta</label>
@@ -288,9 +333,13 @@ function formularioConsulta(event) {
                 <button type="submit">Salvar Consulta</button>
             </form>
     `
+
+    carregarMedicosParaSelect("select-medico");
+
     let consulta = document.getElementById("form-consulta");
     consulta.addEventListener("submit", addConsulta);
 }
+
 function listarConsultas(consultas, pacientes, medicos) {
     let container = document.getElementById("container-conteudo");
     container.innerHTML = "";
@@ -298,6 +347,7 @@ function listarConsultas(consultas, pacientes, medicos) {
 
 
 }
+
 function main() {
     let clickListaPaciente = document.getElementById("link-listar-pacientes");
     clickListaPaciente.addEventListener("click", carregarPacientes);
