@@ -15,6 +15,74 @@ function carregarPacientes(event) {
             console.log(`Deu problema: ${error.message}`);
         });
 }
+function carregarMedicos(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos")
+        .then((resposta) => {
+            if (!resposta.ok) {
+                throw new Error("Erro na requisição");
+            }
+            return resposta.json();
+        })
+        .then(listarMedicos)
+        .catch((error) => {
+            console.log(`Deu problema: ${error.message}`);
+        });
+}
+async function carregarEspecialidade() {
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/especialidades");
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        let dados = await resposta.json();
+        return dados;
+
+    } catch (error) {
+        console.log(`Deu problema: ${error.message}`);
+    }
+}
+async function carregarMedicosParaSelect(selectId) {
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos");
+        if (!resposta.ok) {
+            throw new Error("Não foi possível carregar os dados dos médicos disponíveis.");
+        }
+        let medicos = await resposta.json();
+        let select = document.getElementById(selectId);
+        select.innerHTML = `<option value="">Selecione um médico</option>`
+        for (let medico of medicos) {
+            let option = document.createElement("option");
+            option.value = medico.id;
+            option.innerText = medico.nome;
+            select.append(option);
+        }
+    }
+    catch (error) {
+        console.log(`Deu problema ao carregar médicos: ${error.message}`);
+    }
+}
+async function carregarPacienteParaSelect(selectId) {
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes");
+        if (!resposta.ok) {
+            throw new Error("Não foi possível carregar os dados dos médicos disponíveis.");
+        }
+        let select = document.getElementById(selectId);
+        let pacientes = await resposta.json();
+        for (let paciente of pacientes) {
+            let option = document.createElement("option");
+            option.value = paciente.id;
+            option.innerText = paciente.nome;
+            select.append(option);
+        }
+    }
+    catch (error) {
+        console.log(`Deu problema ao carregar médicos: ${error.message}`);
+    }
+}
 
 async function addPaciente(event) {
     event.preventDefault();
@@ -42,6 +110,58 @@ async function addPaciente(event) {
         alert("Paciente cadastrado com sucesso!");
         document.getElementById("form-paciente").reset();
         carregarPacientes();
+    }
+    catch (error) {
+        alert(`Não foi possível cadastrar: ${error.message}`);
+    }
+}
+async function addMedicos(event) {
+    event.preventDefault();
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            nome: document.querySelector("input[name=nome]").value,
+            idEspecialidade: document.querySelector("select[name=especialidade]").value,
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos", options)
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        document.getElementById("form-medico").reset()
+        alert("Médico salvo com sucesso!");
+        carregarMedicos();
+    }
+    catch (error) {
+        alert(`Não foi possível cadastrar: ${error.message}`);
+    }
+}
+async function addConsulta(event) {
+    event.preventDefault();
+    const options = {
+        method: "POST",
+        body: JSON.stringify({
+            medico: document.querySelector("select[name=select-medico]"),
+            paciente: document.querySelector("select[name=select-paciente]"),
+            data: document.getElementById("data"),
+            horario: document.getElementById("horario")
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/consultas", options);
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        document.getElementById("form-consulta").reset()
+        alert("Consulta cadastrada com sucesso!");
+        carregarMedicos();
     }
     catch (error) {
         alert(`Não foi possível cadastrar: ${error.message}`);
@@ -78,86 +198,6 @@ function listarPacientes(pacientes) {
     table.append(tbody);
     container.append(table);
 }
-
-function mostrarFormularioPaciente(event) {
-    event.preventDefault();
-    let container = document.getElementById("container-conteudo")
-    container.innerHTML = "";
-    container.innerHTML = `
-        <h2>Cadastrar Novo Paciente</h2>
-        
-        <form id="form-paciente"> 
-            <div>
-                <label for="nome">Nome:</label>
-                <input type="text" name="nome" id="nome" required>
-            </div>
-            <div>
-                <label for="dataNascimento">Data de Nascimento:</label>
-                <input type="date" name="dataNascimento" id="dataNascimento" required>
-            </div>
-            
-            <button type="submit">Salvar Paciente</button>
-        </form>
-    `;
-    let form = document.getElementById("form-paciente");
-    form.addEventListener("submit", addPaciente);
-}
-
-function carregarMedicos(event) {
-    if (event) {
-        event.preventDefault();
-    }
-    fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos")
-        .then((resposta) => {
-            if (!resposta.ok) {
-                throw new Error("Erro na requisição");
-            }
-            return resposta.json();
-        })
-        .then(listarMedicos)
-        .catch((error) => {
-            console.log(`Deu problema: ${error.message}`);
-        });
-}
-async function carregarEspecialidade() {
-    try {
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/especialidades");
-        if (!resposta.ok) {
-            throw new Error("Erro na requisição");
-        }
-        let dados = await resposta.json();
-        return dados;
-
-    } catch (error) {
-        console.log(`Deu problema: ${error.message}`);
-    }
-}
-async function addMedicos(event) {
-    event.preventDefault();
-    const options = {
-        method: "POST",
-        body: JSON.stringify({
-            nome: document.querySelector("input[name=nome]").value,
-            idEspecialidade: document.querySelector("select[name=especialidade]").value,
-        }),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    }
-    try {
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos", options)
-        if (!resposta.ok) {
-            throw new Error("Erro na requisição");
-        }
-        document.getElementById("form-medico").reset()
-        alert("Médico salvo com sucesso!");
-        carregarMedicos();
-    }
-    catch (error) {
-        alert(`Não foi possível cadastrar: ${error.message}`);
-    }
-}
-
 async function listarMedicos(medicos) {
     let container = document.getElementById("container-conteudo");
     let especialidades = await carregarEspecialidade();
@@ -197,7 +237,57 @@ async function listarMedicos(medicos) {
     table.append(tbody);
     container.append(table);
 }
+async function listarConsultas() {
+    let container = document.getElementById("container-consultas");
+    container.innerHTML = "";
+    let table = document.createElement("table");
+    let consultas 
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Médico</th>
+                <th>Paciente</th>
+                <th>Data</th>
+                <th>Cancelar</th>
+            </tr>
+        </thead>
+    `;
+    let tbody = document.createElement("tbody");
+    tbody.id = "corpo-listar-consulta";
 
+    let tr = document.createElement("tr");
+    tr.innerHTML = `
+            <td>${medico.nome}</td>
+            <td>${paciente.nome}</td>
+            <td>${consultas.data}</td>
+            <td><button id="cancelar-consulta>Cancelar</button></td>
+        `
+
+}
+
+function mostrarFormularioPaciente(event) {
+    event.preventDefault();
+    let container = document.getElementById("container-conteudo")
+    container.innerHTML = "";
+    container.innerHTML = `
+        <h2>Cadastrar Novo Paciente</h2>
+        
+        <form id="form-paciente"> 
+            <div>
+                <label for="nome">Nome:</label>
+                <input type="text" name="nome" id="nome" required>
+            </div>
+            <div>
+                <label for="dataNascimento">Data de Nascimento:</label>
+                <input type="date" name="dataNascimento" id="dataNascimento" required>
+            </div>
+            
+            <button type="submit">Salvar Paciente</button>
+        </form>
+    `;
+    let form = document.getElementById("form-paciente");
+    form.addEventListener("submit", addPaciente);
+}
 async function mostrarFormularioMedicos(event) {
     event.preventDefault();
     let especialidades = await carregarEspecialidade();
@@ -232,76 +322,6 @@ async function mostrarFormularioMedicos(event) {
     let form = document.getElementById("form-medico");
     form.addEventListener("submit", addMedicos);
 }
-
-async function addConsulta(event) {
-    event.preventDefault();
-    const options = {
-        method: "POST",
-        body: JSON.stringify({
-            medico: document.querySelector("select[name=select-medico]"),
-            paciente: document.querySelector("select[name=select-paciente]"),
-            data: document.getElementById("data"),
-            horario: document.getElementById("horario")
-        }),
-        headers: {
-            "Content-Type": "application/json"
-        }
-    }
-    try {
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/consultas", options);
-        if(!resposta.ok) {
-            throw new Error("Erro na requisição");
-        }
-        document.getElementById("form-consulta").reset()
-        alert("Consulta cadastrada com sucesso!");
-        carregarMedicos();
-    }
-    catch (error) {
-        alert(`Não foi possível cadastrar: ${error.message}`);
-    }
-}
-
-async function carregarMedicosParaSelect(selectId) {
-    try {
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos");
-        if(!resposta.ok) {
-            throw new Error ("Não foi possível carregar os dados dos médicos disponíveis.");
-        }
-        let medicos = await resposta.json();
-        let select = document.getElementById(selectId);
-        select.innerHTML = `<option value="">Selecione um médico</option>`
-        for(let medico of medicos) {
-            let option = document.createElement("option");
-            option.value = medico.id;
-            option.innerText = medico.nome;
-            select.append(option);
-        }
-    }
-    catch(error) {
-        console.log(`Deu problema ao carregar médicos: ${error.message}`);
-    }
-}
-
-async function carregarPacienteParaSelect(selectId) {
-    try {
-        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes");
-        if(!resposta.ok) {
-            throw new Error ("Não foi possível carregar os dados dos médicos disponíveis.");
-        }
-        let select = document.getElementById(selectId);
-        let pacientes = await resposta.json();
-        for(let paciente of pacientes) {
-            let option = document.createElement("option");
-            option.value = paciente.id;
-            option.innerText = paciente.nome;
-            select.append(option);
-        }
-    }
-    catch(error){
-        console.log(`Deu problema ao carregar médicos: ${error.message}`);
-    }
-}
-
 async function formularioConsulta(event) {
     event.preventDefault();
     let container = document.getElementById("container-conteudo");
@@ -341,41 +361,7 @@ async function formularioConsulta(event) {
     consulta.addEventListener("submit", addConsulta);
 }
 
-async function listarConsultas(consultas, paciente, medicos) {
-    let container = document.getElementById("container-conteudo");
-    let especialidades = await carregarEspecialidade();
-    container.innerHTML = "";
-    let table = document.createElement("table");
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Médico</th>
-                <th>Paciente</th>
-                <th>Data</th>
-                <th>Cancelar</th>
-            </tr>
-        </thead>
-    `;
-    let tbody = document.createElement("tbody");
-    tbody.id = "corpo-listar-consulta";
 
-    for(let medico of medicos) {
-        let nomeEspecialidade = medico.idEspecialidade;
-        for(let especialidade of especialidades) {
-            if(especialidade.id == nomeEspecialidade) {
-                nomeEspecialidade = especialidade.nome;
-                break;
-            }
-        }
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${medico.nome}</td>
-            <td>${paciente.nome}</td>
-            <td>${consultas.data}</td>
-            <td><button id="cancelar-consulta>Cancelar</button></td>
-        `
-    }
-}
 
 function main() {
     let clickListaPaciente = document.getElementById("link-listar-pacientes");
