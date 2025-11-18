@@ -219,7 +219,7 @@ async function listarMedicos(medicos) {  //// FUNCIONANDO
     let tbody = document.createElement("tbody");
     tbody.id = "corpo-listar-medicos";
 
-    for (let medico of medicos) {
+    for(let medico of medicos) {
         let nomeEspecialidade = `ID ${medico.idEspecialidade}`;
         for (let especialidade of especialidades) {
             if (especialidade.id == medico.idEspecialidade) {
@@ -240,6 +240,8 @@ async function listarMedicos(medicos) {  //// FUNCIONANDO
     }
     table.append(tbody);
     container.append(table);
+    
+    adicionarListenersMedicos();
 }
 async function listarConsultas(pacienteID) { /////FUNCIONANDO
     let container = document.getElementById("container-consultas");
@@ -310,10 +312,13 @@ function adicionarListenersPacientes() {  ///FUNCIONANDO, MAS INCOMPLETA, FAZER 
             listarConsultas(idPaciente);
         }
         // else if (elementoClicado.id.startsWith('btn-editar-paciente-')) 
+        else if(elementoClicado.id.startsWith('btn-deletar-paciente-')) {
+            deletarPaciente(event);
+        }
     });
 }
 
-function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA, FAZER FUNÇÃO IDENTICA PARA MEDICOS
+function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA
     let tbody = document.getElementById("corpo-listar-medicos");
     if (!tbody) return;
 
@@ -325,7 +330,12 @@ function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA, FAZER FU
             const idPaciente = partesDoId.pop();
             listarConsultas(idPaciente);
         }
-        // else if (elementoClicado.id.startsWith('btn-editar-paciente-')) 
+        else if (elementoClicado.id.startsWith('btn-editar-paciente-')) {
+
+        }
+        else if(elementoClicado.id.startsWith('btn-deletar-medico-')) {
+            deletarMedico(event);
+        }
     });
 }
 
@@ -455,9 +465,54 @@ async function eventListarMedicos(event) { /// FUNCIONANDO
     listarMedicos(medicos);
 }
 
+async function deletarPaciente(event) {
+    event.preventDefault();
+    let idPaciente = event.target.id.split('-').pop();
+    try {
+        let options = {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        };
+        let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/pacientes/${idPaciente}`, options);
+        if(!resposta.ok) {
+            throw new Error ("Erro ao deletar.");
+        }
+        alert("Paciente deletado com sucesso!");
+        carregarPacientes();
+        let pacientes = await carregarPacientes();
+        listarPacientes(pacientes);
+    }
+    catch(error) {
+        alert(`Não foi possível deletar: ${error}`);
+    }
+    
+}
+
 async function deletarMedico(event) {
     event.preventDefault();
-    let medicos = await carregarMedicos();
+    let idMedico = event.target.id.split('-').pop();
+    try {
+        let options = {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        };
+        let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/medicos/${idMedico}`, options);
+        if(!resposta.ok) {
+            throw new Error ("Erro ao deletar.");
+        }
+        alert("Médico deletado com sucesso!");
+        carregarMedicos();
+        let medicos = await carregarMedicos();
+        listarMedicos(medicos);
+    }
+    catch(error) {
+        alert(`Não foi possível deletar: ${error}`);
+    }
+    
 }
 
 async function main() {
@@ -471,8 +526,6 @@ async function main() {
     clickListarMedicos.addEventListener("click", eventListarMedicos);
     let clickAddMedicos = document.getElementById("cadastrar-medicos");
     clickAddMedicos.addEventListener("click", mostrarFormularioMedicos);
-    let botaoDeleteMedico = document.getElementById("btn-deletar-medico-${medico.id}");
-    botaoDeleteMedico.addEventListener("click", deletarMedico);
 
     let adicionarConsulta = document.getElementById("addConsulta");
     adicionarConsulta.addEventListener("click", formularioConsulta);
