@@ -1,45 +1,44 @@
 
-function carregarPacientes(event) {
-    if (event) {
-        event.preventDefault();
+async function carregarPacientes() { //FUNCIONANDO
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes");
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        return await resposta.json();
+    } catch (error) {
+        console.log(`Deu problema: ${error.message}`);
     }
-    fetch("https://ifsp.ddns.net/webservices/clinicaMedica/pacientes")
-        .then((resposta) => {
-            if (!resposta.ok) {
-                throw new Error("Erro na requisição");
-            }
-            return resposta.json();
-        })
-        .then(listarPacientes)
-        .catch((error) => {
-            console.log(`Deu problema: ${error.message}`);
-        });
 }
-function carregarMedicos(event) {
-    if (event) {
-        event.preventDefault();
+async function carregarMedicos() { //FUNCIONANDO
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos");
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        return await resposta.json();
+    } catch (error) {
+        console.log(`Deu problema: ${error.message}`);
     }
-    fetch("https://ifsp.ddns.net/webservices/clinicaMedica/medicos")
-        .then((resposta) => {
-            if (!resposta.ok) {
-                throw new Error("Erro na requisição");
-            }
-            return resposta.json();
-        })
-        .then(listarMedicos)
-        .catch((error) => {
-            console.log(`Deu problema: ${error.message}`);
-        });
 }
-async function carregarEspecialidade() {
+async function carregarEspecialidade() {  //FUNCIONANDO
     try {
         let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/especialidades");
         if (!resposta.ok) {
             throw new Error("Erro na requisição");
         }
-        let dados = await resposta.json();
-        return dados;
-
+        return await resposta.json();;
+    } catch (error) {
+        console.log(`Deu problema: ${error.message}`);
+    }
+}
+async function carregarConsultas() {
+    try {
+        let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/consultas");
+        if (!resposta.ok) {
+            throw new Error("Erro na requisição");
+        }
+        return await resposta.json();
     } catch (error) {
         console.log(`Deu problema: ${error.message}`);
     }
@@ -84,7 +83,7 @@ async function carregarPacienteParaSelect(selectId) {
     }
 }
 
-async function addPaciente(event) {
+async function addPaciente(event) {  //// FUNCIONANDO
     event.preventDefault();
     const options = {
         method: "POST",
@@ -115,7 +114,7 @@ async function addPaciente(event) {
         alert(`Não foi possível cadastrar: ${error.message}`);
     }
 }
-async function addMedicos(event) {
+async function addMedicos(event) { ///// FUNCIONANDO
     event.preventDefault();
     const options = {
         method: "POST",
@@ -147,7 +146,7 @@ async function addConsulta(event) {
         body: JSON.stringify({
             medico: document.querySelector("select[name=select-medico]"),
             paciente: document.querySelector("select[name=select-paciente]"),
-            data: document.getElementById("data"),
+            data: document.getElementById("data-consulta"),
             horario: document.getElementById("horario")
         }),
         headers: {
@@ -168,7 +167,7 @@ async function addConsulta(event) {
     }
 }
 
-function listarPacientes(pacientes) {
+function listarPacientes(pacientes) {  ////FUNCIONANDO
     let container = document.getElementById("container-conteudo");
     container.innerHTML = "";
     let table = document.createElement("table");
@@ -189,16 +188,17 @@ function listarPacientes(pacientes) {
         <td>${paciente.nome}</td>
         <td>${paciente.dataNascimento}</td>
         <td>${paciente.dataCadastro}</td>
-        <td><button id="btn-consultas-paciente">Consultas</button></td>
-        <td><button id="btn-editar-paciente">Editar</button></td>
-        <td><button id="btn-deletar-paciente">Deletar</button></td>
+        <td><button id="btn-consultas-paciente-${paciente.id}">Consultas</button></td>
+        <td><button id="btn-editar-paciente-${paciente.id}">Editar</button></td>
+        <td><button id="btn-deletar-paciente-${paciente.id}">Deletar</button></td>
        `
         tbody.append(tr);
     }
     table.append(tbody);
     container.append(table);
+    adicionarListenersPacientes();
 }
-async function listarMedicos(medicos) {
+async function listarMedicos(medicos) {  //// FUNCIONANDO
     let container = document.getElementById("container-conteudo");
     let especialidades = await carregarEspecialidade();
     container.innerHTML = "";
@@ -228,22 +228,32 @@ async function listarMedicos(medicos) {
         <td>${medico.nome}</td>
         <td>${nomeEspecialidade}</td>
         <td>${medico.dataCadastro}</td>
-        <td><button id="btn-consultas-medico">Consultas</button></td>
-        <td><button id="btn-editar-medico">Editar</button></td>
-        <td><button id="btn-deletar-medico">Deletar</button></td>
+        <td><button id="btn-consultas-medico-${medico.id}">Consultas</button></td>
+        <td><button id="btn-editar-medico-${medico.id}">Editar</button></td>
+        <td><button id="btn-deletar-medico-${medico.id}">Deletar</button></td>
        `
         tbody.append(tr);
     }
     table.append(tbody);
     container.append(table);
 }
-async function listarConsultas() {
+async function listarConsultas(pacienteID) { /////FUNCIONANDO
     let container = document.getElementById("container-consultas");
     container.innerHTML = "";
     let table = document.createElement("table");
-    let consultas 
+    let listaPacientes = await criarListaPacientesPorId();
+    let listaMedicos = await criarListaMedicosPorId();
+    let consultas = await carregarConsultas();
+
+    let consultasFiltradas = consultas.filter(consulta => {
+        return String(consulta.idPaciente) === String(pacienteID);
+    })
     table.innerHTML = `
+
         <thead>
+        <tr>
+        <th>Consultas</th>
+        </tr>
             <tr>
                 <th>Médico</th>
                 <th>Paciente</th>
@@ -252,20 +262,69 @@ async function listarConsultas() {
             </tr>
         </thead>
     `;
+
+    let nomePaciente = listaPacientes[pacienteID];
     let tbody = document.createElement("tbody");
     tbody.id = "corpo-listar-consulta";
+    if (consultasFiltradas.length > 0) {
+        for (let consulta of consultasFiltradas) {
 
-    let tr = document.createElement("tr");
-    tr.innerHTML = `
-            <td>${medico.nome}</td>
-            <td>${paciente.nome}</td>
-            <td>${consultas.data}</td>
-            <td><button id="cancelar-consulta>Cancelar</button></td>
-        `
+            let nomeMedico = listaMedicos[consulta.idMedico];
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${nomeMedico}</td>
+                <td>${nomePaciente}</td>
+                <td>${consulta.data}</td>
+                <td><button id="cancelar-consulta">Cancelar</button></td>
+            `
+            tbody.append(tr);
+
+
+        }
+    }
+    else {
+        table.innerHTML="";
+        let tr = document.createElement("tr");
+        tr.innerHTML = `<td>Nenhuma consulta encontrada para este paciente.</td>`;
+        tbody.append(tr);
+    }
+    table.append(tbody);
+    container.append(table);
 
 }
+function adicionarListenersPacientes() {  ///FUNCIONANDO, MAS INCOMPLETA, FAZER FUNÇÃO IDENTICA PARA MEDICOS
+    let tbody = document.getElementById("corpo-listar-pacientes");
+    if (!tbody) return;
 
-function mostrarFormularioPaciente(event) {
+    tbody.addEventListener('click', (event) => {
+        const elementoClicado = event.target;
+
+        if (elementoClicado.id.startsWith('btn-consultas-paciente-')) {
+            const partesDoId = elementoClicado.id.split('-');
+            const idPaciente = partesDoId.pop();
+            listarConsultas(idPaciente);
+        }
+        // else if (elementoClicado.id.startsWith('btn-editar-paciente-')) 
+    });
+}
+async function criarListaPacientesPorId() {
+    let pacientes = await carregarPacientes();
+    let listaPacientes = {};
+    for (let paciente of pacientes) {
+        listaPacientes[paciente.id] = paciente.nome;
+    }
+    return listaPacientes;
+}
+async function criarListaMedicosPorId() {
+    let medicos = await carregarMedicos();
+    let listaMedicos = {};
+    for (let medico of medicos) {
+        listaMedicos[medico.id] = medico.nome
+    }
+    return listaMedicos;
+}
+
+function mostrarFormularioPaciente(event) {  ////FUNCIONANDO
     event.preventDefault();
     let container = document.getElementById("container-conteudo")
     container.innerHTML = "";
@@ -288,7 +347,7 @@ function mostrarFormularioPaciente(event) {
     let form = document.getElementById("form-paciente");
     form.addEventListener("submit", addPaciente);
 }
-async function mostrarFormularioMedicos(event) {
+async function mostrarFormularioMedicos(event) {   ////FUNCIONANDO
     event.preventDefault();
     let especialidades = await carregarEspecialidade();
     let container = document.getElementById("container-conteudo")
@@ -344,7 +403,7 @@ async function formularioConsulta(event) {
                 </div>
                 <div>
                     <label for="data-consulta">Data da consulta</label>
-                    <input type="date" id="data">
+                    <input type="date" id="data-consulta">
                 </div>
                 <div>
                     <label for="horario-consulta">Horário da consulta</label>
@@ -360,21 +419,31 @@ async function formularioConsulta(event) {
     let consulta = document.getElementById("form-consulta");
     consulta.addEventListener("submit", addConsulta);
 }
-
-
-
-function main() {
+async function eventListarPacientes(event) {  //FUNCIONANDO
+    event.preventDefault();
+    let pacientes = await carregarPacientes();
+    listarPacientes(pacientes);
+}
+async function eventListarMedicos(event) { /// FUNCIONANDO
+    event.preventDefault();
+    let medicos = await carregarMedicos();
+    listarMedicos(medicos);
+}
+async function main() {
     let clickListaPaciente = document.getElementById("link-listar-pacientes");
-    clickListaPaciente.addEventListener("click", carregarPacientes);
+    clickListaPaciente.addEventListener("click", eventListarPacientes);
+
     let clicKAddPaciente = document.getElementById("link-cadastrar-pacientes");
     clicKAddPaciente.addEventListener("click", mostrarFormularioPaciente);
 
     let clickListarMedicos = document.getElementById("listar-medicos");
-    clickListarMedicos.addEventListener("click", carregarMedicos);
+    clickListarMedicos.addEventListener("click", eventListarMedicos);
     let clickAddMedicos = document.getElementById("cadastrar-medicos");
     clickAddMedicos.addEventListener("click", mostrarFormularioMedicos);
 
     let adicionarConsulta = document.getElementById("addConsulta");
     adicionarConsulta.addEventListener("click", formularioConsulta);
+
+
 }
 main()
