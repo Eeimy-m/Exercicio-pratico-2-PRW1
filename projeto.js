@@ -358,7 +358,7 @@ async function listarConsultas(consultas, paciente, medicos) {
     `;
     let tbody = document.createElement("tbody");
     tbody.id = "corpo-listar-consulta";
-
+    
     for(let medico of medicos) {
         let nomeEspecialidade = medico.idEspecialidade;
         for(let especialidade of especialidades) {
