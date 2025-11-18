@@ -194,7 +194,7 @@ function mostrarFormularioMedicos(event) {
     form.addEventListener("submit", addMedicos);
 }
 
-function addConsulta(event) {
+async function addConsulta(event) {
 
 }
 
