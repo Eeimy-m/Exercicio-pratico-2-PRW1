@@ -110,10 +110,10 @@ async function addPaciente(event) {  //// FUNCIONANDO
         }
         alert("Paciente cadastrado com sucesso!");
         document.getElementById("form-paciente").reset();
-        carregarPacientes();
     }
     catch (error) {
         alert(`Não foi possível cadastrar: ${error.message}`);
+        document.getElementById("form-paciente").reset();
     }
 }
 
@@ -134,40 +134,47 @@ async function addMedicos(event) { ///// FUNCIONANDO
         if (!resposta.ok) {
             throw new Error("Erro na requisição");
         }
-        document.getElementById("form-medico").reset()
         alert("Médico salvo com sucesso!");
-        carregarMedicos();
+        document.getElementById("form-medico").reset()
     }
     catch (error) {
         alert(`Não foi possível cadastrar: ${error.message}`);
+        document.getElementById("form-medico").reset()
     }
 }
 
 async function addConsulta(event) {
     event.preventDefault();
+    let data = document.getElementById("data-consulta").value;
+    let horario = document.getElementById("horario").value;
+    let dataCompleta = new Date(`${data} ${horario}:00`);
+    let agora = new Date();
     const options = {
         method: "POST",
         body: JSON.stringify({
-            medico: Number(document.querySelector("select[name=select-medico]").value),
-            paciente: Number(document.querySelector("select[name=select-paciente]").value),
-            data: document.getElementById("data-consulta").value,
-            horario: document.getElementById("horario").value
+
+            idPaciente: Number(document.querySelector("select[name=select-paciente]").value),
+            idMedico: Number(document.querySelector("select[name=select-medico]").value),
+            data: `${data} ${horario}:00`,
         }),
         headers: {
             "Content-Type": "application/json"
         }
     }
     try {
+        if (dataCompleta < agora) {
+            throw new Error("A consulta não pode ser marcada para o passado.");
+        }
         let resposta = await fetch("https://ifsp.ddns.net/webservices/clinicaMedica/consultas", options);
         if (!resposta.ok) {
             throw new Error("Erro na requisição");
         }
-        document.getElementById("form-consulta").reset()
         alert("Consulta cadastrada com sucesso!");
-        carregarMedicos();
+        document.getElementById("form-consulta").reset()
     }
     catch (error) {
         alert(`Não foi possível cadastrar: ${error.message}`);
+        document.getElementById("form-consulta").reset()
     }
 }
 
@@ -219,7 +226,7 @@ async function listarMedicos(medicos) {  //// FUNCIONANDO
     let tbody = document.createElement("tbody");
     tbody.id = "corpo-listar-medicos";
 
-    for(let medico of medicos) {
+    for (let medico of medicos) {
         let nomeEspecialidade = `ID ${medico.idEspecialidade}`;
         for (let especialidade of especialidades) {
             if (especialidade.id == medico.idEspecialidade) {
@@ -240,7 +247,7 @@ async function listarMedicos(medicos) {  //// FUNCIONANDO
     }
     table.append(tbody);
     container.append(table);
-    
+
     adicionarListenersMedicos();
 }
 
@@ -287,7 +294,7 @@ async function listarConsultas(pacienteID) { /////FUNCIONANDO
         }
     }
     else {
-        table.innerHTML="";
+        table.innerHTML = "";
         let tr = document.createElement("tr");
         tr.innerHTML = `<td>Nenhuma consulta encontrada para este paciente.</td>`;
         tbody.append(tr);
@@ -295,7 +302,7 @@ async function listarConsultas(pacienteID) { /////FUNCIONANDO
     table.append(tbody);
     container.append(table);
 
-    adicionarListenetConsultas();
+    adicionarListenerConsultas();
 
 }
 
@@ -342,15 +349,15 @@ async function listarConsultasMedicos(medicoId) {
         }
     }
     else {
-        table.innerHTML="";
+        table.innerHTML = "";
         let tr = document.createElement("tr");
-        tr.innerHTML = `<td>Nenhuma consulta encontrada para este paciente.</td>`;
+        tr.innerHTML = `<td>Nenhuma consulta encontrada para este médico.</td>`;
         tbody.append(tr);
     }
     table.append(tbody);
     container.append(table);
 
-    adicionarListenetConsultas();
+    adicionarListenerConsultas();
 
 }
 
@@ -369,7 +376,7 @@ function adicionarListenersPacientes() {  ///FUNCIONANDO, MAS INCOMPLETA, FAZER 
         else if (elementoClicado.id.startsWith('btn-editar-paciente-')) {
             editarPaciente(event);
         }
-        else if(elementoClicado.id.startsWith('btn-deletar-paciente-')) {
+        else if (elementoClicado.id.startsWith('btn-deletar-paciente-')) {
             deletarPaciente(event);
         }
     });
@@ -390,20 +397,20 @@ function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA
         else if (elementoClicado.id.startsWith('btn-editar-medico-')) {
             editarMedico(event);
         }
-        else if(elementoClicado.id.startsWith('btn-deletar-medico-')) {
+        else if (elementoClicado.id.startsWith('btn-deletar-medico-')) {
             deletarMedico(event);
         }
     });
 }
 
-function adicionarListenetConsultas() {
+function adicionarListenerConsultas() {
     let tbody = document.getElementById("corpo-listar-consulta");
-    if(!tbody) return;
+    if (!tbody) return;
 
     tbody.addEventListener("click", (event) => {
         const elementoClicado = event.target;
-        
-        if(elementoClicado.id.startsWith("cancelar-consulta-")) {
+
+        if (elementoClicado.id.startsWith("cancelar-consulta-")) {
             cancelarConsulta(event);
         }
     })
@@ -495,23 +502,23 @@ async function formularioConsulta(event) {
             <form id="form-consulta">
                 <div>
                     <label for="medico" name="medico">Médico</label>
-                    <select id="select-medico" name="select-medico">
-                        <option>Selecione um médico</option>
+                    <select id="select-medico" name="select-medico" required>
+                        <option value="">Selecione um médico</option>
                     </select>
                 </div>
                 <div>
                     <label for="paciente">Paciente</label>
-                    <select id="select-paciente" name="select-paciente">
-                        <option>Selecione um paciente</option>
+                    <select id="select-paciente" name="select-paciente" required>
+                        <option value="">Selecione um paciente</option>
                     </select>
                 </div>
                 <div>
                     <label for="data-consulta">Data da consulta</label>
-                    <input type="date" id="data-consulta">
+                    <input type="date" id="data-consulta" required>
                 </div>
                 <div>
                     <label for="horario-consulta">Horário da consulta</label>
-                    <input type="time" id="horario">
+                    <input type="time" id="horario" required>
                 </div>
                 <button type="submit">Salvar Consulta</button>
             </form>
@@ -546,18 +553,18 @@ async function deletarPaciente(event) {
             }
         };
         let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/pacientes/${idPaciente}`, options);
-        if(!resposta.ok) {
-            throw new Error ("Erro ao deletar.");
+        if (!resposta.ok) {
+            throw new Error("Erro ao deletar.");
         }
         alert("Paciente deletado com sucesso!");
         carregarPacientes();
         let pacientes = await carregarPacientes();
         listarPacientes(pacientes);
     }
-    catch(error) {
+    catch (error) {
         alert(`Não foi possível deletar: ${error}`);
     }
-    
+
 }
 
 async function deletarMedico(event) {
@@ -571,18 +578,18 @@ async function deletarMedico(event) {
             }
         };
         let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/medicos/${idMedico}`, options);
-        if(!resposta.ok) {
-            throw new Error ("Erro ao deletar.");
+        if (!resposta.ok) {
+            throw new Error("Erro ao deletar.");
         }
         alert("Médico deletado com sucesso!");
         carregarMedicos();
         let medicos = await carregarMedicos();
         listarMedicos(medicos);
     }
-    catch(error) {
+    catch (error) {
         alert(`Não foi possível deletar: ${error}`);
     }
-    
+
 }
 
 async function cancelarConsulta(event) {
@@ -596,14 +603,14 @@ async function cancelarConsulta(event) {
             }
         };
         let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/consultas/${idConsulta}`, options);
-        if(!resposta.ok) {
-            throw new Error ("Erro ao deletar.");
+        if (!resposta.ok) {
+            throw new Error("Erro ao deletar.");
         }
         alert("Consulta cancelada com sucesso!");
         let consultas = await carregarConsultas();
         location.reload();
     }
-    catch(error) {
+    catch (error) {
         alert(`Não foi possível cancelar a consulta: ${error}`);
     }
 }
@@ -613,8 +620,8 @@ async function editarPaciente(event) {
     let idPaciente = event.target.id.split('-').pop();
     try {
         let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/pacientes/${idPaciente}`);
-        if(!resposta.ok) {
-            throw new Error ("Erro ao editar.");
+        if (!resposta.ok) {
+            throw new Error("Erro ao editar.");
         }
         const paciente = await resposta.json();
 
@@ -652,12 +659,12 @@ async function editarPaciente(event) {
                 let r = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/pacientes/${idPaciente}`, options);
                 if (!r.ok) {
                     throw new Error("Erro ao salvar alterações");
-                } 
+                }
                 alert("Paciente atualizado com sucesso!");
                 form.removeEventListener("submit", submitHandler);
                 const pacientes = await carregarPacientes();
                 listarPacientes(pacientes);
-            } 
+            }
             catch (err) {
                 alert(`Não foi possível atualizar: ${err.message}`);
             }
@@ -665,7 +672,7 @@ async function editarPaciente(event) {
         form.addEventListener("submit", submitHandler);
 
     }
-    catch(error) {
+    catch (error) {
         alert(`Não foi possível editar: ${error}`);
     }
 }
@@ -677,8 +684,8 @@ async function editarMedico(event) {
 
     try {
         let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/medicos/${idMedico}`);
-        if(!resposta.ok) {
-            throw new Error ("Erro ao editar.");
+        if (!resposta.ok) {
+            throw new Error("Erro ao editar.");
         }
         const medico = await resposta.json();
 
@@ -728,12 +735,12 @@ async function editarMedico(event) {
                 let r = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/medicos/${idMedico}`, options);
                 if (!r.ok) {
                     throw new Error("Erro ao salvar alterações");
-                } 
+                }
                 alert("Médico atualizado com sucesso!");
                 form.removeEventListener("submit", submitHandler);
                 const medicos = await carregarMedicos();
                 listarMedicos(medicos);
-            } 
+            }
             catch (err) {
                 alert(`Não foi possível atualizar: ${err.message}`);
             }
@@ -741,7 +748,7 @@ async function editarMedico(event) {
         form.addEventListener("submit", submitHandler);
 
     }
-    catch(error) {
+    catch (error) {
         alert(`Não foi possível editar: ${error}`);
     }
 }
