@@ -72,6 +72,7 @@ async function carregarPacienteParaSelect(selectId) {
             throw new Error("Não foi possível carregar os dados dos médicos disponíveis.");
         }
         let select = document.getElementById(selectId);
+        select.innerHTML = `<option value="">Selecione um paciente</option>`;
         let pacientes = await resposta.json();
         for (let paciente of pacientes) {
             let option = document.createElement("option");
@@ -123,7 +124,7 @@ async function addMedicos(event) { ///// FUNCIONANDO
         method: "POST",
         body: JSON.stringify({
             nome: document.querySelector("input[name=nome]").value,
-            idEspecialidade: document.querySelector("select[name=especialidade]").value,
+            idEspecialidade: Number(document.querySelector("select[name=especialidade]").value),
         }),
         headers: {
             "Content-Type": "application/json"
@@ -145,13 +146,23 @@ async function addMedicos(event) { ///// FUNCIONANDO
 
 async function addConsulta(event) {
     event.preventDefault();
+    let medico = Number(document.getElementById("select-medico").value);
+    let paciente = Number(document.getElementById("select-paciente").value);
+    let data = document.getElementById("data-consulta").value;
+    let horario = document.getElementById("horario").value;
+
+    if (!medico || !paciente || !data || !horario) {
+        alert("Por favor, preencha todos os campos!");
+        return;
+    }
+
     const options = {
         method: "POST",
         body: JSON.stringify({
-            medico: Number(document.querySelector("select[name=select-medico]").value),
-            paciente: Number(document.querySelector("select[name=select-paciente]").value),
-            data: document.getElementById("data-consulta").value,
-            horario: document.getElementById("horario").value
+            idMedico: medico,
+            idPaciente: paciente,
+            data: data,
+            horario: horario
         }),
         headers: {
             "Content-Type": "application/json"
@@ -164,7 +175,6 @@ async function addConsulta(event) {
         }
         document.getElementById("form-consulta").reset()
         alert("Consulta cadastrada com sucesso!");
-        carregarMedicos();
     }
     catch (error) {
         alert(`Não foi possível cadastrar: ${error.message}`);
@@ -496,13 +506,13 @@ async function formularioConsulta(event) {
                 <div>
                     <label for="medico" name="medico">Médico</label>
                     <select id="select-medico" name="select-medico">
-                        <option>Selecione um médico</option>
+                        <option value="">Selecione um médico</option>
                     </select>
                 </div>
                 <div>
                     <label for="paciente">Paciente</label>
                     <select id="select-paciente" name="select-paciente">
-                        <option>Selecione um paciente</option>
+                        <option value="">Selecione um paciente</option>
                     </select>
                 </div>
                 <div>
@@ -575,6 +585,7 @@ async function deletarMedico(event) {
             throw new Error ("Erro ao deletar.");
         }
         alert("Médico deletado com sucesso!");
+        await deletarConsultaPorIdMedico(idMedico);
         carregarMedicos();
         let medicos = await carregarMedicos();
         listarMedicos(medicos);
@@ -583,6 +594,52 @@ async function deletarMedico(event) {
         alert(`Não foi possível deletar: ${error}`);
     }
     
+}
+
+async function deletarConsultaPorIdPaciente(idPaciente) {
+    try {
+        let consultas = await carregarConsultas();
+        let consultasDoPaciente = consultas.filter(consulta => consulta.idPaciente == idPaciente);
+
+        for(let consulta of consultasDoPaciente) {
+            let options = {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+            await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/consultas/${consulta.id}`, options)
+        }
+        if (consultasDoPaciente.length > 0) {
+            alert(`${consultasDoPaciente.length} consulta(s) cancelada(s)!`);
+        }
+    }
+    catch(error) {
+        alert(`Problema ao cancelar consultas: ${error}`);
+    }
+}
+
+async function deletarConsultaPorIdMedico(medicoId) {
+    try {
+        let consultas = await carregarConsultas();
+        let consultasDoMedico = consultas.filter(consulta => consulta.idMedico == medicoId);
+
+        for(let consulta of consultasDoMedico) {
+            let options = {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+            await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/consultas/${consulta.id}`, options)
+        }
+        if (consultasDoMedico.length > 0) {
+            alert(`${consultasDoMedico.length} consulta(s) cancelada(s)!`);
+        }
+    }
+    catch(error) {
+        alert(`Problema ao cancelar consultas: ${error}`);
+    }
 }
 
 async function cancelarConsulta(event) {
