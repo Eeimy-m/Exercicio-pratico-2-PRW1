@@ -148,10 +148,10 @@ async function addConsulta(event) {
     const options = {
         method: "POST",
         body: JSON.stringify({
-            medico: document.querySelector("select[name=select-medico]"),
-            paciente: document.querySelector("select[name=select-paciente]"),
-            data: document.getElementById("data-consulta"),
-            horario: document.getElementById("horario")
+            medico: Number(document.querySelector("select[name=select-medico]").value),
+            paciente: Number(document.querySelector("select[name=select-paciente]").value),
+            data: document.getElementById("data-consulta").value,
+            horario: document.getElementById("horario").value
         }),
         headers: {
             "Content-Type": "application/json"
@@ -281,7 +281,7 @@ async function listarConsultas(pacienteID) { /////FUNCIONANDO
                 <td>${nomeMedico}</td>
                 <td>${nomePaciente}</td>
                 <td>${consulta.data}</td>
-                <td><button id="cancelar-consulta">Cancelar</button></td>
+                <td><button id="cancelar-consulta-${consulta.id}">Cancelar</button></td>
             `
             tbody.append(tr);
         }
@@ -294,6 +294,8 @@ async function listarConsultas(pacienteID) { /////FUNCIONANDO
     }
     table.append(tbody);
     container.append(table);
+
+    adicionarListenetConsultas();
 
 }
 
@@ -334,7 +336,7 @@ async function listarConsultasMedicos(medicoId) {
                 <td>${nomeMedico}</td>
                 <td>${nomePaciente}</td>
                 <td>${consulta.data}</td>
-                <td><button id="cancelar-consulta">Cancelar</button></td>
+                <td><button id="cancelar-consulta-${consulta.id}">Cancelar</button></td>
             `
             tbody.append(tr);
         }
@@ -347,6 +349,8 @@ async function listarConsultasMedicos(medicoId) {
     }
     table.append(tbody);
     container.append(table);
+
+    adicionarListenetConsultas();
 
 }
 
@@ -394,13 +398,13 @@ function adicionarListenersMedicos() {  ///FUNCIONANDO, MAS INCOMPLETA
 
 function adicionarListenetConsultas() {
     let tbody = document.getElementById("corpo-listar-consulta");
-    if(!tbody.ok) return;
+    if(!tbody) return;
 
     tbody.addEventListener("click", (event) => {
         const elementoClicado = event.target;
         
-        if(elementoClicado.id == "cancelar-consulta") {
-            cancelarConsulta();
+        if(elementoClicado.id.startsWith("cancelar-consulta-")) {
+            cancelarConsulta(event);
         }
     })
 }
@@ -491,7 +495,7 @@ async function formularioConsulta(event) {
             <form id="form-consulta">
                 <div>
                     <label for="medico" name="medico">Médico</label>
-                    <select id="select-medico" name="select=medico">
+                    <select id="select-medico" name="select-medico">
                         <option>Selecione um médico</option>
                     </select>
                 </div>
@@ -581,8 +585,27 @@ async function deletarMedico(event) {
     
 }
 
-async function cancelarConsulta() {
-
+async function cancelarConsulta(event) {
+    event.preventDefault();
+    let idConsulta = event.target.id.split('-').pop();
+    try {
+        let options = {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        };
+        let resposta = await fetch(`https://ifsp.ddns.net/webservices/clinicaMedica/consultas/${idConsulta}`, options);
+        if(!resposta.ok) {
+            throw new Error ("Erro ao deletar.");
+        }
+        alert("Consulta cancelada com sucesso!");
+        let consultas = await carregarConsultas();
+        location.reload();
+    }
+    catch(error) {
+        alert(`Não foi possível cancelar a consulta: ${error}`);
+    }
 }
 
 async function editarPaciente(event) {
